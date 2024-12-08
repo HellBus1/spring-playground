@@ -15,7 +15,7 @@
 	<artifactId>learning-core</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>learning-core</name>
-	<description>Spring project to learn </description>
+	<description>Spring project to learn</description>
 
 	<url />
 
@@ -75,6 +75,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>6.20.0</version>
 		</dependency>
 	</dependencies>
 
