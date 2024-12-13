@@ -2,9 +2,14 @@ package com.spring_playground.learning_core.controllers;
 
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,6 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 public class ReportController {
+    @Autowired
+    private ResourceLoader resourceLoader;
 
     @GetMapping("/generate-pdf")
     public void generatePdf(HttpServletResponse response) throws Exception {
@@ -40,8 +47,11 @@ public class ReportController {
             JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(dataList);
 
             // Compile the JasperReport template
-            JasperReport jasperReport = JasperCompileManager.compileReport(
-                    getClass().getResourceAsStream("/report_template.jrxml"));
+            String pdfFormatPath = "classpath:report_template.jrxml";
+            Resource resourceGroup = resourceLoader.getResource(pdfFormatPath);
+
+            InputStream stream = resourceGroup.getInputStream();
+            JasperReport jasperReport = JasperCompileManager.compileReport(stream);
 
             // Fill the report with data
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, new HashMap<>(), dataSource);
