@@ -12,9 +12,9 @@
 	</parent>
 
 	<groupId>com.spring-playground</groupId>
-	<artifactId>learning-core</artifactId>
+	<artifactId>garbage-collection-exploration</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>learning-core</name>
+	<name>garbage-collection-exploration</name>
 	<description>Spring project to learn</description>
 
 	<url />

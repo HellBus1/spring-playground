@@ -3,4 +3,4 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     scrape_interval: 5s # This can be adjusted based on our needs
     static_configs:
-      - targets: ['learning-core:8080']
+      - targets: ['garbage-collection-exploration:8080']

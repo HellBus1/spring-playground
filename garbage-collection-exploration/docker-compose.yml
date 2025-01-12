@@ -1,11 +1,11 @@
 version: "3.8"
 services:
-  learning-core:
+  garbage-collection-exploration:
     build:
         context: .
         dockerfile: Dockerfile
-    container_name: learning-core
-    image: learning-core:0.0.1
+    container_name: garbage-collection-exploration
+    image: garbage-collection-exploration:0.0.1
     environment:
       - JAVA_TOOL_OPTIONS=-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:+UseContainerSupport -Xmx512m -Xms256m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=64m -XX:MaxRAM=700m
     deploy:
