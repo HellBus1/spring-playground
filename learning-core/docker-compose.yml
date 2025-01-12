@@ -1,0 +1,53 @@
+version: "3.8"
+services:
+  learning-core:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    container_name: learning-core
+    image: learning-core:0.0.1
+    environment:
+      - JAVA_TOOL_OPTIONS=-XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:+UseContainerSupport -Xmx512m -Xms256m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=64m -XX:MaxRAM=700m
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+          cpus: "0.5" # Limiting CPU usage to 500MB (0.5 vCPU)
+        reservations:
+          memory: 512m
+          cpus: "0.2" # Reserving minimal resources for baseline operation
+    ports:
+      - 8081:8080
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:v3.0.0
+    container_name: prometheus
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9091:9090"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:11.0.8
+    container_name: grafana
+    volumes:
+      # - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+
+volumes:
+  grafana-data:
+  prometheus-data:
+
+networks:
+  monitoring:
