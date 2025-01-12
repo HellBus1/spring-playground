@@ -12,4 +12,4 @@
 ./mvnw spring-boot:run
 ```
 
-The articles that discuss this project is available in my medium **[Choosing a Garbage Collector in Spring Boot Effectively for Maximum Performance to Prevent Downtime](./garbage-collection-exploration/)**
+The articles that discuss this project is available in my medium **[Choosing a Garbage Collector in Spring Boot Effectively for Maximum Performance to Prevent Downtime](https://medium.com/@syubbanfakhriya/choosing-a-garbage-collector-in-spring-boot-effectively-for-maximum-performance-to-prevent-downtime-3836a49a4e08)**
