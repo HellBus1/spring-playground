@@ -1,5 +1,5 @@
 -- Create Account table
-CREATE TABLE accounts (
+CREATE TABLE account (
     id BIGSERIAL PRIMARY KEY,
     account_number VARCHAR(20) UNIQUE NOT NULL,
     customer_name VARCHAR(100) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE accounts (
 );
 
 -- Create Transaction table
-CREATE TABLE transactions (
+CREATE TABLE transaction (
     id BIGSERIAL PRIMARY KEY,
     transaction_reference VARCHAR(36) UNIQUE NOT NULL,
     source_account_id BIGINT REFERENCES accounts(id),
