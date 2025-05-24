@@ -12,8 +12,8 @@ CREATE TABLE account (
 CREATE TABLE transaction (
     id BIGSERIAL PRIMARY KEY,
     transaction_reference VARCHAR(36) UNIQUE NOT NULL,
-    source_account_id BIGINT REFERENCES accounts(id),
-    destination_account_id BIGINT REFERENCES accounts(id),
+    source_account_id BIGINT REFERENCES account(id),
+    destination_account_id BIGINT REFERENCES account(id),
     amount DECIMAL(15,2) NOT NULL,
     transaction_type VARCHAR(20) NOT NULL,
     status VARCHAR(20) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE transaction (
 -- Create Transaction Status History table
 CREATE TABLE transaction_status_history (
     id BIGSERIAL PRIMARY KEY,
-    transaction_id BIGINT REFERENCES transactions(id),
+    transaction_id BIGINT REFERENCES transaction(id),
     status VARCHAR(20) NOT NULL,
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
