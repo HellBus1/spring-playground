@@ -9,6 +9,9 @@ import org.springframework.stereotype.Repository;
 import com.spring_playground.database_exploration.entity.Account;
 
 import jakarta.persistence.LockModeType;
+
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,4 +26,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Lock(LockModeType.OPTIMISTIC)
     @Query("SELECT a FROM Account a WHERE a.accountNumber = :accountNumber")
     Optional<Account> findByAccountNumberWithOptimisticLock(@Param("accountNumber") String accountNumber);
+
+    @Query("SELECT a FROM Account a WHERE a.balance > :threshold")
+    List<Account> findByBalanceGreaterThan(@Param("threshold") BigDecimal threshold);
 }
