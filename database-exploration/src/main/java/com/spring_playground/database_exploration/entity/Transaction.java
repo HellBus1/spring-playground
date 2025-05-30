@@ -23,7 +23,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.EnumType;
 
 @Entity
-@Table(name = "transactions")
+@Table(name = "transaction")
 @Data
 @Builder
 @NoArgsConstructor
@@ -64,5 +64,6 @@ public class Transaction {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 }

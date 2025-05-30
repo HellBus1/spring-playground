@@ -12,6 +12,8 @@ import com.spring_playground.database_exploration.model.TransferRequest;
 
 import java.math.BigDecimal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class TransferController {
     private final TransferService transferService;
+    Logger logger = LoggerFactory.getLogger(TransferController.class);
 
     @PostMapping("/regular")
     public ResponseEntity<Transaction> regularTransfer(@RequestBody TransferRequest request) {
@@ -35,8 +38,16 @@ public class TransferController {
                     request.getAmount());
             return ResponseEntity.ok(transaction);
         } catch (InsufficientBalanceException e) {
+            logger.error("Insufficient balance for transfer from {} to {}: {}", 
+                         request.getSourceAccountNumber(), 
+                         request.getDestinationAccountNumber(), 
+                         e.getMessage());
             return ResponseEntity.badRequest().body(failedTransaction);
         } catch (Exception e) {
+            logger.error("Error during transfer from {} to {}: {}", 
+                         request.getSourceAccountNumber(), 
+                         request.getDestinationAccountNumber(), 
+                         e.getMessage());
             return ResponseEntity.status(500).body(failedTransaction);
         }
     }
@@ -55,8 +66,16 @@ public class TransferController {
                     request.getAmount());
             return ResponseEntity.ok(transaction);
         } catch (InsufficientBalanceException e) {
+            logger.error("Insufficient balance for unsafe transfer from {} to {}: {}", 
+                         request.getSourceAccountNumber(), 
+                         request.getDestinationAccountNumber(), 
+                         e.getMessage());
             return ResponseEntity.badRequest().body(failedTransaction);
         } catch (Exception e) {
+            logger.error("Error during unsafe transfer from {} to {}: {}", 
+                         request.getSourceAccountNumber(), 
+                         request.getDestinationAccountNumber(), 
+                         e.getMessage());
             return ResponseEntity.status(500).body(failedTransaction);
         }
     }
@@ -75,8 +94,16 @@ public class TransferController {
                     request.getAmount());
             return ResponseEntity.ok(transaction);
         } catch (InsufficientBalanceException e) {
+            logger.error("Insufficient balance for deadlock-safe transfer from {} to {}: {}", 
+                         request.getSourceAccountNumber(), 
+                         request.getDestinationAccountNumber(), 
+                         e.getMessage());
             return ResponseEntity.badRequest().body(failedTransaction);
         } catch (Exception e) {
+            logger.error("Error during deadlock-safe transfer from {} to {}: {}", 
+                         request.getSourceAccountNumber(), 
+                         request.getDestinationAccountNumber(), 
+                         e.getMessage());
             return ResponseEntity.status(500).body(failedTransaction);
         }
     }
@@ -95,8 +122,16 @@ public class TransferController {
                     request.getAmount());
             return ResponseEntity.ok(transaction);
         } catch (InsufficientBalanceException e) {
+            logger.error("Insufficient balance for optimistic lock transfer from {} to {}: {}", 
+                         request.getSourceAccountNumber(), 
+                         request.getDestinationAccountNumber(), 
+                         e.getMessage());
             return ResponseEntity.badRequest().body(failedTransaction);
         } catch (Exception e) {
+            logger.error("Error during optimistic lock transfer from {} to {}: {}", 
+                         request.getSourceAccountNumber(), 
+                         request.getDestinationAccountNumber(), 
+                         e.getMessage());
             return ResponseEntity.status(500).body(failedTransaction);
         }
     }
