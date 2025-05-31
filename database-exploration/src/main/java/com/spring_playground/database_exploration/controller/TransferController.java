@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -140,6 +141,22 @@ public class TransferController {
     public ResponseEntity<BigDecimal> getDirtyBalance(@PathVariable String accountNumber) {
         BigDecimal balance = transferService.getDirtyBalance(accountNumber);
         return ResponseEntity.ok(balance);
+    }
+
+    @PostMapping("/demonstrate-partial-failure")
+    public ResponseEntity<Transaction> demonstratePartialFailure(
+            @RequestBody TransferRequest request,
+            @RequestParam(defaultValue = "false") boolean simulateError) {
+        try {
+            Transaction transaction = transferService.demonstratePartialFailure(
+                request.getSourceAccountNumber(),
+                request.getDestinationAccountNumber(),
+                request.getAmount(),
+                simulateError);
+            return ResponseEntity.ok(transaction);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     private Transaction getFailedTransaction(String sourceAccountNumber, String destinationAccountNumber,
