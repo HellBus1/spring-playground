@@ -5,13 +5,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.spring_playground.database_exploration.entity.Account;
 import com.spring_playground.database_exploration.entity.Transaction;
-import com.spring_playground.database_exploration.entity.TransactionStatusHistory;
 import com.spring_playground.database_exploration.enumeration.TransactionStatus;
 import com.spring_playground.database_exploration.enumeration.TransactionType;
 import com.spring_playground.database_exploration.exception.InsufficientBalanceException;
 import com.spring_playground.database_exploration.repository.AccountRepository;
 import com.spring_playground.database_exploration.repository.TransactionRepository;
-import com.spring_playground.database_exploration.repository.TransactionStatusHistoryRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,13 +27,12 @@ import lombok.extern.slf4j.Slf4j;
 public class TransferService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
-    private final TransactionStatusHistoryRepository statusHistoryRepository;
 
     /**
      * Regular transfer with proper transaction handling
      * @throws InsufficientBalanceException 
      */
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional
     public Transaction regularTransfer(String sourceAccountNumber, String destinationAccountNumber, BigDecimal amount) throws InsufficientBalanceException {
         Account sourceAccount = accountRepository.findByAccountNumber(sourceAccountNumber)
             .orElseThrow(() -> new RuntimeException("Source account not found"));
@@ -183,16 +180,7 @@ public class TransferService {
         transaction = transactionRepository.save(transaction);
 
         try {
-            // Create initial status history
-            TransactionStatusHistory pendingHistory = TransactionStatusHistory.builder()
-                .transaction(transaction)
-                .status(TransactionStatus.PENDING)
-                .notes("Transaction initiated")
-                .build();
-            
-            statusHistoryRepository.save(pendingHistory);
-
-            // Simulate error based on parameter
+            // Simulate error before processing transfer
             if (simulateError) {
                 throw new RuntimeException("Simulated system error during transfer");
             }
@@ -205,36 +193,11 @@ public class TransferService {
             accountRepository.save(destinationAccount);
 
             transaction.setStatus(TransactionStatus.COMPLETED);
-            transaction = transactionRepository.save(transaction);
-
-            TransactionStatusHistory completedHistory = TransactionStatusHistory.builder()
-                .transaction(transaction)
-                .status(TransactionStatus.COMPLETED)
-                .notes("Transfer completed successfully")
-                .build();
-            
-            statusHistoryRepository.save(completedHistory);
-
-            return transaction;
+            return transactionRepository.save(transaction);
         } catch (Exception e) {
             log.error("Error during transfer: {}", e.getMessage());
-            
-            try {
-                // Try to save failure status
-                transaction.setStatus(TransactionStatus.FAILED);
-                transaction = transactionRepository.save(transaction);
-
-                TransactionStatusHistory failedHistory = TransactionStatusHistory.builder()
-                    .transaction(transaction)
-                    .status(TransactionStatus.FAILED)
-                    .notes("Transfer failed: " + e.getMessage())
-                    .build();
-                
-                statusHistoryRepository.save(failedHistory);
-            } catch (Exception ex) {
-                log.error("Failed to save failure status: {}", ex.getMessage());
-            }
-            
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
             throw e;
         }
     }
