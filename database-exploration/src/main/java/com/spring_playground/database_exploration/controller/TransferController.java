@@ -1,8 +1,6 @@
 package com.spring_playground.database_exploration.controller;
 
-import com.spring_playground.database_exploration.entity.Account;
 import com.spring_playground.database_exploration.entity.Transaction;
-import com.spring_playground.database_exploration.enumeration.TransactionStatus;
 import com.spring_playground.database_exploration.exception.InsufficientBalanceException;
 import com.spring_playground.database_exploration.service.TransferService;
 
@@ -26,14 +24,9 @@ public class TransferController {
     Logger logger = LoggerFactory.getLogger(TransferController.class);
 
     @PostMapping("/regular")
-    public ResponseEntity<Transaction> regularTransfer(@RequestBody TransferRequest request) {
-        Transaction failedTransaction = getFailedTransaction(
-                request.getSourceAccountNumber(),
-                request.getDestinationAccountNumber(),
-                request.getAmount());
-        Transaction transaction;
+    public ResponseEntity<?> regularTransfer(@RequestBody TransferRequest request) {
         try {
-            transaction = transferService.regularTransfer(
+            Transaction transaction = transferService.regularTransfer(
                     request.getSourceAccountNumber(),
                     request.getDestinationAccountNumber(),
                     request.getAmount());
@@ -43,25 +36,20 @@ public class TransferController {
                          request.getSourceAccountNumber(), 
                          request.getDestinationAccountNumber(), 
                          e.getMessage());
-            return ResponseEntity.badRequest().body(failedTransaction);
+            return ResponseEntity.badRequest().body("Transfer failed: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error during transfer from {} to {}: {}", 
                          request.getSourceAccountNumber(), 
                          request.getDestinationAccountNumber(), 
                          e.getMessage());
-            return ResponseEntity.status(500).body(failedTransaction);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Transfer failed: " + e.getMessage());
         }
     }
 
     @PostMapping("/unsafe")
-    public ResponseEntity<Transaction> unsafeTransfer(@RequestBody TransferRequest request) {
-        Transaction failedTransaction = getFailedTransaction(
-                request.getSourceAccountNumber(),
-                request.getDestinationAccountNumber(),
-                request.getAmount());
-        Transaction transaction;
+    public ResponseEntity<?> unsafeTransfer(@RequestBody TransferRequest request) {
         try {
-            transaction = transferService.unsafeTransfer(
+            Transaction transaction = transferService.unsafeTransfer(
                     request.getSourceAccountNumber(),
                     request.getDestinationAccountNumber(),
                     request.getAmount());
@@ -71,25 +59,20 @@ public class TransferController {
                          request.getSourceAccountNumber(), 
                          request.getDestinationAccountNumber(), 
                          e.getMessage());
-            return ResponseEntity.badRequest().body(failedTransaction);
+            return ResponseEntity.badRequest().body("Transfer failed: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error during unsafe transfer from {} to {}: {}", 
                          request.getSourceAccountNumber(), 
                          request.getDestinationAccountNumber(), 
                          e.getMessage());
-            return ResponseEntity.status(500).body(failedTransaction);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Transfer failed: " + e.getMessage());
         }
     }
 
     @PostMapping("/deadlock-safe")
-    public ResponseEntity<Transaction> deadlockSafeTransfer(@RequestBody TransferRequest request) {
-        Transaction failedTransaction = getFailedTransaction(
-                request.getSourceAccountNumber(),
-                request.getDestinationAccountNumber(),
-                request.getAmount());
-        Transaction transaction;
+    public ResponseEntity<?> deadlockSafeTransfer(@RequestBody TransferRequest request) {
         try {
-            transaction = transferService.deadlockSafeTransfer(
+            Transaction transaction = transferService.deadlockSafeTransfer(
                     request.getSourceAccountNumber(),
                     request.getDestinationAccountNumber(),
                     request.getAmount());
@@ -99,25 +82,20 @@ public class TransferController {
                          request.getSourceAccountNumber(), 
                          request.getDestinationAccountNumber(), 
                          e.getMessage());
-            return ResponseEntity.badRequest().body(failedTransaction);
+            return ResponseEntity.badRequest().body("Transfer failed: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error during deadlock-safe transfer from {} to {}: {}", 
                          request.getSourceAccountNumber(), 
                          request.getDestinationAccountNumber(), 
                          e.getMessage());
-            return ResponseEntity.status(500).body(failedTransaction);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Transfer failed: " + e.getMessage());
         }
     }
 
     @PostMapping("/optimistic")
-    public ResponseEntity<Transaction> optimisticLockTransfer(@RequestBody TransferRequest request) {
-        Transaction failedTransaction = getFailedTransaction(
-                request.getSourceAccountNumber(),
-                request.getDestinationAccountNumber(),
-                request.getAmount());
-        Transaction transaction;
+    public ResponseEntity<?> optimisticLockTransfer(@RequestBody TransferRequest request) {
         try {
-            transaction = transferService.optimisticLockTransfer(
+            Transaction transaction = transferService.optimisticLockTransfer(
                     request.getSourceAccountNumber(),
                     request.getDestinationAccountNumber(),
                     request.getAmount());
@@ -127,13 +105,13 @@ public class TransferController {
                          request.getSourceAccountNumber(), 
                          request.getDestinationAccountNumber(), 
                          e.getMessage());
-            return ResponseEntity.badRequest().body(failedTransaction);
+            return ResponseEntity.badRequest().body("Transfer failed: " + e.getMessage());
         } catch (Exception e) {
             logger.error("Error during optimistic lock transfer from {} to {}: {}", 
                          request.getSourceAccountNumber(), 
                          request.getDestinationAccountNumber(), 
                          e.getMessage());
-            return ResponseEntity.status(500).body(failedTransaction);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Transfer failed: " + e.getMessage());
         }
     }
 
@@ -144,7 +122,7 @@ public class TransferController {
     }
 
     @PostMapping("/demonstrate-partial-failure")
-    public ResponseEntity<Transaction> demonstratePartialFailure(
+    public ResponseEntity<?> demonstratePartialFailure(
             @RequestBody TransferRequest request,
             @RequestParam(defaultValue = "false") boolean simulateError) {
         try {
@@ -155,24 +133,11 @@ public class TransferController {
                 simulateError);
             return ResponseEntity.ok(transaction);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            logger.error("Error during transfer from {} to {}: {}", 
+                         request.getSourceAccountNumber(), 
+                         request.getDestinationAccountNumber(), 
+                         e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Transfer failed: " + e.getMessage());
         }
-    }
-
-    private Transaction getFailedTransaction(String sourceAccountNumber, String destinationAccountNumber,
-            BigDecimal amount) {
-        Account sourceAccount = Account.builder()
-                .accountNumber(sourceAccountNumber)
-                .build();
-        Account destinationAccount = Account.builder()
-                .accountNumber(destinationAccountNumber)
-                .build();
-        Transaction failedTransaction = Transaction.builder()
-                .sourceAccount(sourceAccount)
-                .destinationAccount(destinationAccount)
-                .amount(amount)
-                .status(TransactionStatus.FAILED)
-                .build();
-        return failedTransaction;
     }
 }

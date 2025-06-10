@@ -174,6 +174,7 @@ public class TransferService {
             .sourceAccount(sourceAccount)
             .destinationAccount(destinationAccount)
             .amount(amount)
+            .transactionType(TransactionType.TRANSFER)
             .status(TransactionStatus.PENDING)
             .build();
         
