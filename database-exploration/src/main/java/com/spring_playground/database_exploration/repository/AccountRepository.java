@@ -34,7 +34,13 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
     @Query(value = "SELECT * FROM account WHERE account_number = :accountNumber FOR UPDATE", nativeQuery = true)
     Optional<Account> findByAccountNumberForUpdate(@Param("accountNumber") String accountNumber);
 
+    @Query(value = "SELECT * FROM account WHERE account_number = :accountNumber", 
+           nativeQuery = true)
+    Optional<Account> findByAccountNumberUnsafe(@Param("accountNumber") String accountNumber);
+
     @Modifying
-    @Query(value = "UPDATE account SET balance = :newBalance WHERE id = :accountId", nativeQuery = true)
-    int updateBalanceUnsafe(@Param("accountId") Long accountId, @Param("newBalance") BigDecimal newBalance);
+    @Query(value = "UPDATE account SET balance = :newBalance WHERE account_number = :accountNumber", 
+           nativeQuery = true)
+    int updateBalanceUnsafe(@Param("accountNumber") String accountNumber, 
+                           @Param("newBalance") BigDecimal newBalance);
 }

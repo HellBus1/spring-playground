@@ -52,22 +52,27 @@ public class TransferService {
      * @throws InsufficientBalanceException 
      */
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public Transaction unsafeTransfer(String sourceAccountNumber, String destinationAccountNumber, BigDecimal amount) throws InsufficientBalanceException {
-        // Use native query to bypass optimistic locking
-        Account sourceAccount = accountRepository.findByAccountNumberForUpdate(sourceAccountNumber)
+    public Transaction unsafeTransfer(String sourceAccountNumber, String destinationAccountNumber, BigDecimal amount) 
+            throws InsufficientBalanceException {
+        // Read account without any locking
+        Account sourceAccount = accountRepository.findByAccountNumberUnsafe(sourceAccountNumber)
             .orElseThrow(() -> new RuntimeException("Source account not found"));
         
         // Simulate delay to increase race condition probability
         try {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        Account destinationAccount = accountRepository.findByAccountNumberForUpdate(destinationAccountNumber)
+        // Check balance (this check might be stale)
+        if (sourceAccount.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientBalanceException("Insufficient balance");
+        }
+
+        Account destinationAccount = accountRepository.findByAccountNumberUnsafe(destinationAccountNumber)
             .orElseThrow(() -> new RuntimeException("Destination account not found"));
 
-        // Create transaction record
         Transaction transaction = Transaction.builder()
             .transactionReference(UUID.randomUUID().toString())
             .sourceAccount(sourceAccount)
@@ -80,21 +85,21 @@ public class TransferService {
         transaction = transactionRepository.save(transaction);
 
         try {
-            // Use native query to update balances directly
+            // Update balances directly without checking current state
             int updatedRows = accountRepository.updateBalanceUnsafe(
-                sourceAccount.getId(), 
+                sourceAccountNumber,
                 sourceAccount.getBalance().subtract(amount)
             );
-            
+
             if (updatedRows == 0) {
                 throw new RuntimeException("Failed to update source account balance");
             }
 
             updatedRows = accountRepository.updateBalanceUnsafe(
-                destinationAccount.getId(), 
+                destinationAccountNumber,
                 destinationAccount.getBalance().add(amount)
             );
-            
+
             if (updatedRows == 0) {
                 throw new RuntimeException("Failed to update destination account balance");
             }
